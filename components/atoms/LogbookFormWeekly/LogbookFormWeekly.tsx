@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -19,6 +21,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 const getDaysInMonth = (month: number, year: number) => {
   return new Date(year, month, 0).getDate();
@@ -52,6 +55,7 @@ export default function LogbookTable() {
     setDaysInMonth(getDaysInMonth(month, year));
     const key = `${month}-${year}`;
     if (!logData[key]) {
+      // Initialize logData for the selected month and year if it doesn't exist
       setLogData((prev) => ({
         ...prev,
         [key]: Array.from({ length: getDaysInMonth(month, year) }, () => ""),
@@ -62,10 +66,11 @@ export default function LogbookTable() {
   const handleSave = () => {
     if (selectedDay !== null) {
       const key = `${month}-${year}`;
-      const updatedData = [...(logData[key] || [])];
-      updatedData[selectedDay - 1] = inputValue;
-      setLogData((prev) => ({ ...prev, [key]: updatedData }));
-      setSelectedDay(null);
+      // Make a copy of the current log data and update only the selected day
+      const updatedData = [...logData[key]];
+      updatedData[selectedDay - 1] = inputValue; // Update the specific day
+      setLogData((prev) => ({ ...prev, [key]: updatedData })); // Save the updated data
+      setSelectedDay(null); // Close the dialog
     }
   };
 
@@ -100,7 +105,7 @@ export default function LogbookTable() {
         </Select>
       </CardHeader>
 
-      <CardContent className="mt-4 ">
+      <CardContent className="mt-4">
         {/* Tabel */}
         <ScrollArea className="w-full border rounded-lg p-4 bg-white overflow-x-auto">
           <table className="border w-full min-w-max text-sm md:text-base text-gray-700">
@@ -149,7 +154,6 @@ export default function LogbookTable() {
                             <DialogTrigger asChild>
                               <button
                                 onClick={() => {
-                                  console.log("hello");
                                   setSelectedDay(day);
                                   setInputValue(
                                     logData[`${month}-${year}`]?.[day - 1] || ""
@@ -161,6 +165,37 @@ export default function LogbookTable() {
                                   "Input"}
                               </button>
                             </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Edit Log</DialogTitle>
+                                <DialogDescription>
+                                  Update the log for this day.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="grid gap-4 py-4">
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                  <Label
+                                    htmlFor="logInput"
+                                    className="text-right"
+                                  >
+                                    Log
+                                  </Label>
+                                  <Input
+                                    id="logInput"
+                                    value={inputValue}
+                                    onChange={(e) =>
+                                      setInputValue(e.target.value)
+                                    }
+                                    className="col-span-3"
+                                  />
+                                </div>
+                              </div>
+                              <DialogFooter>
+                                <Button onClick={handleSave}>
+                                  Save changes
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
                           </Dialog>
                         </td>
                       )
